@@ -1,0 +1,6 @@
+/prompt_deduplication/input_sequences/
+/data/ngrams.bin
+/data/c4_en_10k.jsonl
+/data/c4_tokenized_10k.txt
+/data/c4_partial.jsonl
+/.idea/
