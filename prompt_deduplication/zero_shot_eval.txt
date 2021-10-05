@@ -1,0 +1,10 @@
+anli
+super_glue_cb
+hans
+super_glue_rte
+hellaswag
+lambada
+story_cloze
+super_glue_wic
+winogrande
+super_glue_wsc
