@@ -38,10 +38,11 @@ def count_occurences(q, suffix):
 
 
 def longest_sequence_approximate(top_level_query, suffix, smallest_length):
-    current_scale = power_log(len(top_level_query))
-    max_len = len(top_level_query)
+    whitespaced = top_level_query.split()
+    current_scale = power_log(len(whitespaced))
+    max_len = len(whitespaced)
     while current_scale >= smallest_length:
-        queries = [top_level_query[i:i+current_scale] for i in range(0, max_len, current_scale)]
+        queries = [" ".join(whitespaced[i:i+current_scale]) for i in range(0, max_len, current_scale)]
         # print(queries)
         counts = [count_occurences(query, suffix) for query in queries]
         if any(counts):
@@ -57,7 +58,7 @@ if __name__ == "__main__":
     parser.add_argument('--suffix', type=str, required=True)
     parser.add_argument('--queries_folder', type=str)
     parser.add_argument('--tokenize', action='store_true')
-    parser.add_argument('--lower_bound', type=int, default=64)
+    parser.add_argument('--lower_bound', type=int, default=8)
 
     args = parser.parse_args()
 

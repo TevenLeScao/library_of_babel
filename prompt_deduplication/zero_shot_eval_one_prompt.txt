@@ -1,0 +1,10 @@
+anli_GPT_3_style_r1
+super_glue_cb_GPT_3_style
+hans_GPT_3_style
+super_glue_rte_GPT_3_style
+hellaswag_Predict_ending_with_hint
+lambada_predict_the_last_word
+story_cloze_2016_Answer_Given_options
+super_glue_wic_GPT_3_prompt
+winogrande_winogrande_xl_Replace
+super_glue_wsc.fixed_GPT_3_Style

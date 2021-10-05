@@ -39,24 +39,33 @@ def load_cached_task(cache_dir, split):
     return ds
 
 
-FILE_LIST = ["d4_eval.txt"]
+FILE_LIST = ["zero_shot_eval.txt"]
 
 if __name__ == "__main__":
 
-    output_dir = "input_sequences"
+    output_dir = "zero_shot_sequences"
     os.makedirs(output_dir, exist_ok=True)
-    split = "test"
 
     for file in FILE_LIST:
         with open(file) as f:
             for line in tqdm(f):
-                output_file = os.path.join(output_dir, f"{line[:-1]}.{split}.json")
-                if os.path.isfile(output_file):
-                    continue
+                task_name = line[:-1]
                 try:
-                    ds = load_cached_task(f"gs://bigscience/experiment_d/experiment_d_cached_tasks/v0.2/{line[:-1]}/", split)
+                    split = "test"
+                    output_file = os.path.join(output_dir, f"{task_name}.{split}.json")
+                    if os.path.isfile(output_file):
+                        continue
+                    ds = load_cached_task(f"gs://bigscience/experiment_d/experiment_d_cached_tasks/v0.2/{task_name}/", split)
                     queries = [ex["inputs_pretokenized"].decode("utf8") for ex in ds.as_numpy_iterator()]
                 except:
-                    queries = None
+                    try:
+                        split = "validation"
+                        output_file = os.path.join(output_dir, f"{task_name}.{split}.json")
+                        if os.path.isfile(output_file):
+                            continue
+                        ds = load_cached_task(f"gs://bigscience/experiment_d/experiment_d_cached_tasks/v0.2/{task_name}/", split)
+                        queries = [ex["inputs_pretokenized"].decode("utf8") for ex in ds.as_numpy_iterator()]
+                    except:
+                        queries = None
                 with open(output_file, "w") as g:
                     json.dump(queries, g, ensure_ascii=False, indent=2)
