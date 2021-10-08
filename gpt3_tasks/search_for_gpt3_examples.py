@@ -1,5 +1,8 @@
 import argparse
 import json
+import os
+
+import numpy as np
 from tqdm import tqdm
 import random
 from collections import OrderedDict
@@ -19,12 +22,12 @@ def shuffle_string(string):
 
 # this may return less than n_outputs - we're using a set - for example if there's less possibilities than n_outputs
 def build_anagram_hard(word, n_outputs=5, **kwargs):
-    return {word[0] + shuffle_string(word[1:-1]) + word[-1] for _ in range(n_outputs)}
+    return {word[:1] + shuffle_string(word[1:-1]) + word[-1:] for _ in range(n_outputs)}
 
 
 # this may return less than n_outputs - we're using a set - for example if there's less possibilities than n_outputs
 def build_anagram_easy(word, n_outputs=5, **kwargs):
-    return {word[2] + shuffle_string(word[2:-2]) + word[-2] for _ in range(n_outputs)}
+    return {word[:2] + shuffle_string(word[2:-2]) + word[-2:] for _ in range(n_outputs)}
 
 
 def build_cycles(word, **kwargs):
@@ -61,8 +64,16 @@ if __name__ == "__main__":
     if args.sanity:
         test_words = test_words[:10]
 
+    os.makedirs(args.output_folder, exist_ok=True)
+
     for tr_name, tr_fn in transfos.items():
         print(f"querying for {tr_name} transform")
+        tr_counts = {}
         for word in tqdm(test_words):
             counts = {query: count_occurences(query, args.suffix, args.tokenize) for query in
-                      tr_fn(word, n_outputs=args.n_outputs)}
+                      tr_fn(word, n_outputs=args.n_outputs) if query != word}
+            tr_counts[word] = counts
+        average_count = np.mean([count for word_count in tr_counts.values() for count in word_count.values()])
+        json.dump(tr_counts, open(os.path.join(args.output_folder, f"{tr_name}_per_word_count.json"), "w"), ensure_ascii=False, indent=2)
+        json.dump(average_count, open(os.path.join(args.output_folder, f"{tr_name}_avg_count.json"), "w"), ensure_ascii=False, indent=2)
+
