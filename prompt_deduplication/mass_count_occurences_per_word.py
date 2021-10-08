@@ -3,38 +3,26 @@ import argparse
 import json
 import math
 import os
-import warnings
 
-import numpy as np
 from tqdm import tqdm
+
+from utils import count_occurences
 
 
 def power_log(x):
     return 2**(math.ceil(math.log(x, 2)))
 
 
-def count_occurences(q, suffix):
-    if args.tokenize:
-        from transformers import GPT2Tokenizer
-        tokenizer = GPT2Tokenizer.from_pretrained("gpt2")
-        arr = np.array(tokenizer.encode(q), dtype=np.uint16).view(np.uint8).tobytes()
+def max_possible_length(index, queries, current_scale):
+    if index == 0:
+        # start of sequence can only grow one way
+        return 2 * current_scale
+    elif index == len(queries) - 1:
+        # end of sequence might be shorter than current_scale
+        return 2 * len(queries[-1].split())
     else:
-        arr = q.encode('utf-8')
-    open("/tmp/fin", "wb").write(arr)
-    counted = False
-    tries = 0
-    while not counted:
-        try:
-            count = int((os.popen("../../deduplicate-text-datasets/target/debug/dedup_dataset count_occurances %s /tmp/fin" % (
-                suffix)).read().strip().split("Number of times present: ")[-1]))
-            counted = True
-        except ValueError:
-            tries += 1
-            if tries == 5:
-                count = 0
-                warnings.warn(f"Failed to count query {q}")
-                break
-    return count
+        # middle of sequence can grow both ways
+        return 3 * current_scale
 
 
 def longest_sequence_approximate(top_level_query, suffix, smallest_length):
@@ -44,9 +32,17 @@ def longest_sequence_approximate(top_level_query, suffix, smallest_length):
     while current_scale >= smallest_length:
         queries = [" ".join(whitespaced[i:i+current_scale]) for i in range(0, max_len, current_scale)]
         # print(queries)
-        counts = [count_occurences(query, suffix) for query in queries]
+        counts = [count_occurences(query, suffix, tokenize=args.tokenize) for query in queries]
         if any(counts):
-            return 3 * current_scale
+            possible_lengths = [max_possible_length(i, queries, current_scale) for i, count in enumerate(counts) if count]
+            output = max(possible_lengths)
+            if output > smallest_length:
+                # then we've found a real chunk
+                return output
+            else:
+                # then it means the rump end of the sequence triggered it, so we're removng it
+                whitespaced = whitespaced[:power_log(len(whitespaced)) // 2]
+                max_len = len(whitespaced)
         else:
             current_scale = current_scale // 2
     return smallest_length
@@ -58,11 +54,11 @@ if __name__ == "__main__":
     parser.add_argument('--suffix', type=str, required=True)
     parser.add_argument('--queries_folder', type=str)
     parser.add_argument('--tokenize', action='store_true')
-    parser.add_argument('--lower_bound', type=int, default=8)
+    parser.add_argument('--lower_bound', type=int, default=16)
 
     args = parser.parse_args()
 
-    flagged_queries = {}
+    flagged_queries = {queries_file: {} for queries_file in os.listdir(args.queries_folder)}
     flagged_per_task = {}
 
     for queries_file in os.listdir(args.queries_folder):
@@ -76,10 +72,7 @@ if __name__ == "__main__":
         for q in tqdm(queries):
             longest_sequence = longest_sequence_approximate(q, args.suffix, args.lower_bound)
             if longest_sequence > args.lower_bound:
-                if queries_file in flagged_queries:
-                    flagged_queries[queries_file][q] = longest_sequence
-                else:
-                    flagged_queries[queries_file] = {q: longest_sequence}
+                flagged_queries[queries_file][q] = (longest_sequence, len(q.split()))
 
         flagged_per_task[queries_file] = len(flagged_queries[queries_file])
         print(f"flagged {len(flagged_queries[queries_file])} prompts")

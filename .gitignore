@@ -4,3 +4,5 @@
 /data/c4_tokenized_10k.txt
 /data/c4_partial.jsonl
 /.idea/
+/data/
+/simplewiki_suffix/

@@ -78,7 +78,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     transfos = {transfo_name: transfo for transfo_name, transfo in transfos.items() if vars(args).get(transfo_name)}
-    with open("../data/test_words.json") as f:
+    with open("../gpt3_tasks/test_words.json") as f:
         test_words = json.load(f)
     test_words = test_words[:10]
     transfo_test_words = {transfo_name: [(word, transfo(word)) for word in test_words] for transfo_name, transfo in
