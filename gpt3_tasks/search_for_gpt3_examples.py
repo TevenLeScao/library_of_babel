@@ -62,7 +62,7 @@ def build_cycles(word, **kwargs):
 def build_insertion(word, chars=None, n_outputs=5, **kwargs):
     if chars is None:
         chars = [",", ".", "!", "/", "\\", ":", ";", " "]
-    return {"".join(i + chars[random.randint(0, len(chars) - 1)] for i in word) for _ in range(n_outputs)}
+    return {"".join(i + chars[random.randint(0, len(chars) - 1)] for i in word)[:-1] for _ in range(n_outputs)}
 
 
 if __name__ == "__main__":
@@ -75,7 +75,7 @@ if __name__ == "__main__":
     parser.add_argument("--output_folder", type=str)
     parser.add_argument('--suffix', type=str, required=True)
     parser.add_argument('--tokenize', action='store_true')
-    parser.add_argument("--sanity", action="store_true")
+    parser.add_argument("--n_words", type=int, default=10000)
     parser.add_argument("--n_outputs", type=int, default=5)
     for transfo_name in transfos:
         parser.add_argument(f"--{transfo_name}", action="store_true")
@@ -85,8 +85,7 @@ if __name__ == "__main__":
 
     with open(args.words_to_test) as f:
         test_words = json.load(f)
-    if args.sanity:
-        test_words = test_words[:10]
+    test_words = test_words[:args.n_words]
 
     os.makedirs(args.output_folder, exist_ok=True)
 
