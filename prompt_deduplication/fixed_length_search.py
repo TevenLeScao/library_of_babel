@@ -71,7 +71,6 @@ if __name__ == "__main__":
             if match_found:
                 flagged += 1
                 flagged_queries[queries_file].append(matched_queries)
-            break
 
         flagged_per_task[queries_file] = flagged
         print(f"flagged {flagged} prompts")
