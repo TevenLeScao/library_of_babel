@@ -36,8 +36,7 @@ def fixed_length_search(top_level_query, suffix, substring_length):
     whitespaced = top_level_query.split()
     max_len = len(whitespaced)
     queries = [" ".join(whitespaced[i:i+substring_length]) for i in range(0, max_len, substring_length)]
-    queries[-1] = " ".join(whitespaced[len(whitespaced)-substring_length:len(whitespaced)])
-    # print(queries)
+    queries[-1] = " ".join(whitespaced[max(len(whitespaced)-substring_length, 0):len(whitespaced)])
     counts = [count_occurences(query, suffix, tokenize=args.tokenize) for query in queries]
     return any(counts), [query for i, query in enumerate(queries) if counts[i]]
 
@@ -72,6 +71,7 @@ if __name__ == "__main__":
             if match_found:
                 flagged += 1
                 flagged_queries[queries_file].append(matched_queries)
+            break
 
         flagged_per_task[queries_file] = flagged
         print(f"flagged {flagged} prompts")
