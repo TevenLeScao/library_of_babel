@@ -1,6 +1,7 @@
 import argparse
 import json
 import os
+from os.path import isdir
 import warnings
 
 import numpy as np
@@ -55,6 +56,8 @@ if __name__ == "__main__":
     flagged_queries = {queries_file: [] for queries_file in os.listdir(args.queries_folder)}
 
     for queries_file in os.listdir(args.queries_folder):
+        if isdir(queries_file):
+            continue
         print(queries_file)
         with open(os.path.join(args.queries_folder, queries_file)) as f:
             queries = json.load(f)
