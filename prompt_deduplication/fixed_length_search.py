@@ -39,7 +39,7 @@ def fixed_length_search(top_level_query, suffix, substring_length):
     queries[-1] = " ".join(whitespaced[len(whitespaced)-substring_length:len(whitespaced)])
     # print(queries)
     counts = [count_occurences(query, suffix, tokenize=args.tokenize) for query in queries]
-    return any(counts)
+    return any(counts), [query for i, query in enumerate(queries) if counts[i]]
 
 
 if __name__ == "__main__":
@@ -56,7 +56,7 @@ if __name__ == "__main__":
     flagged_queries = {queries_file: [] for queries_file in os.listdir(args.queries_folder)}
 
     for queries_file in os.listdir(args.queries_folder):
-        if isdir(queries_file):
+        if isdir(os.path.join(args.queries_folder, queries_file)):
             continue
         print(queries_file)
         with open(os.path.join(args.queries_folder, queries_file)) as f:
@@ -68,9 +68,10 @@ if __name__ == "__main__":
         flagged = 0
 
         for q in tqdm(queries):
-            if fixed_length_search(q, args.suffix, args.length):
+            match_found, matched_queries = fixed_length_search(q, args.suffix, args.length)
+            if match_found:
                 flagged += 1
-                flagged_queries[queries_file].append(q)
+                flagged_queries[queries_file].append(matched_queries)
 
         flagged_per_task[queries_file] = flagged
         print(f"flagged {flagged} prompts")
