@@ -52,6 +52,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     flagged_per_task = {}
+    flagged_queries = {queries_file: [] for queries_file in os.listdir(args.queries_folder)}
 
     for queries_file in os.listdir(args.queries_folder):
         print(queries_file)
@@ -66,8 +67,11 @@ if __name__ == "__main__":
         for q in tqdm(queries):
             if fixed_length_search(q, args.suffix, args.length):
                 flagged += 1
+                flagged_queries[queries_file].append(q)
 
         flagged_per_task[queries_file] = flagged
         print(f"flagged {flagged} prompts")
 
-        json.dump(flagged_per_task, open(os.path.join(args.queries_folder, "flagged_per_task.json"), "w"), ensure_ascii=False, indent=2)
+        os.makedirs(os.path.join(args.queries_folder, "flagged"), exist_ok=True)
+        json.dump(flagged_per_task, open(os.path.join(args.queries_folder, "flagged", "flagged_per_task.json"), "w"), ensure_ascii=False, indent=2)
+        json.dump(flagged_queries, open(os.path.join(args.queries_folder, "flagged", "flagged_queries.json"), "w"), ensure_ascii=False, indent=2)
