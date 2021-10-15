@@ -79,7 +79,8 @@ if __name__ == "__main__":
     parser.add_argument("--output_folder", type=str)
     parser.add_argument('--suffix', type=str, required=True)
     parser.add_argument('--tokenize', action='store_true')
-    parser.add_argument("--n_words", type=int, default=10000)
+    parser.add_argument("--words_start", type=int, default=0)
+    parser.add_argument("--words_end", type=int, default=10000)
     parser.add_argument("--n_outputs", type=int, default=5)
     parser.add_argument("--combine", action='store_true')
     for transfo_name in transfos:
@@ -90,7 +91,8 @@ if __name__ == "__main__":
 
     with open(args.words_to_test) as f:
         test_words = json.load(f)
-    test_words = test_words[:args.n_words]
+
+    test_words = test_words[args.words_start:args.words_end]
 
     os.makedirs(args.output_folder, exist_ok=True)
 
@@ -100,7 +102,7 @@ if __name__ == "__main__":
         for word in tqdm(test_words):
             if args.combine:
                 queries = [combined for transfed in tr_fn(word, n_outputs=args.n_outputs) if transfed != word for
-                           combined in combine_transfed_and_og(transfed, word)]
+                           combined in combine_transfed_and_og(transfed, word) + combine_transfed_and_og(word, transfed)]
             else:
                 queries = [transfed for transfed in tr_fn(word, n_outputs=args.n_outputs) if transfed != word]
             counts = {query: count_occurences(query, args.suffix, args.tokenize) for query in queries}
