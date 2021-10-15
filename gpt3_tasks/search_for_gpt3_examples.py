@@ -65,6 +65,10 @@ def build_insertion(word, chars=None, n_outputs=5, **kwargs):
     return {"".join(i + chars[random.randint(0, len(chars) - 1)] for i in word)[:-1] for _ in range(n_outputs)}
 
 
+def combine_transfed_and_og(transfed, og):
+    return [f"{og}, {transfed}", f"{og} {transfed}", f"{og} = {transfed}", f"{og}={transfed}"]
+
+
 if __name__ == "__main__":
 
     transfos = OrderedDict(
@@ -77,6 +81,7 @@ if __name__ == "__main__":
     parser.add_argument('--tokenize', action='store_true')
     parser.add_argument("--n_words", type=int, default=10000)
     parser.add_argument("--n_outputs", type=int, default=5)
+    parser.add_argument("--combine", action='store_true')
     for transfo_name in transfos:
         parser.add_argument(f"--{transfo_name}", action="store_true")
     args = parser.parse_args()
@@ -93,8 +98,13 @@ if __name__ == "__main__":
         print(f"querying for {tr_name} transform")
         tr_counts = {}
         for word in tqdm(test_words):
-            counts = {query: count_occurences(query, args.suffix, args.tokenize) for query in
-                      tr_fn(word, n_outputs=args.n_outputs) if query != word}
+            if args.combine:
+                queries = [combined for transfed in tr_fn(word, n_outputs=args.n_outputs) if transfed != word for
+                           combined in combine_transfed_and_og(transfed, word)]
+            else:
+                queries = [transfed for transfed in tr_fn(word, n_outputs=args.n_outputs) if transfed != word]
+            print(queries)
+            counts = {query: count_occurences(query, args.suffix, args.tokenize) for query in queries}
             tr_counts[word] = counts
         average_count = np.mean([count for word_count in tr_counts.values() for count in word_count.values()])
         json.dump(tr_counts, open(os.path.join(args.output_folder, f"{tr_name}_per_word_count.json"), "w"),
