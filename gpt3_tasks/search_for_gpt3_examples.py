@@ -103,7 +103,6 @@ if __name__ == "__main__":
                            combined in combine_transfed_and_og(transfed, word)]
             else:
                 queries = [transfed for transfed in tr_fn(word, n_outputs=args.n_outputs) if transfed != word]
-            print(queries)
             counts = {query: count_occurences(query, args.suffix, args.tokenize) for query in queries}
             tr_counts[word] = counts
         average_count = np.mean([count for word_count in tr_counts.values() for count in word_count.values()])
