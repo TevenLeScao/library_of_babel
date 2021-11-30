@@ -60,7 +60,7 @@ if __name__ == "__main__":
 
         for query in tqdm(queries):
             query_count = count_occurences(query, args.suffix)
-            counted_queries[queries_file].append(query, query_count)
+            counted_queries[queries_file].append((query, query_count))
 
         json.dump(counted_queries, open(os.path.join(args.queries_folder, "counts", "counts.json"), "w"),
                   ensure_ascii=False, indent=2)
