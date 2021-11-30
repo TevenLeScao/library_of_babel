@@ -64,7 +64,12 @@ if __name__ == "__main__":
     for queries_file in os.listdir(args.queries_folder):
         print(queries_file)
         with open(os.path.join(args.queries_folder, queries_file)) as f:
-            queries = json.load(f)
+            if queries_file.split(".")[-1] == "json":
+                queries = json.load(f)
+            elif queries_file.split(".")[-1] == "txt":
+                queries = f.readlines()
+            else:
+                raise NotImplementedError(f"File extension {queries_file.split('.')[-1]} not supported")
 
         if queries is None:
             continue
