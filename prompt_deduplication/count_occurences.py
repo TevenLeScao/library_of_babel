@@ -62,5 +62,5 @@ if __name__ == "__main__":
             query_count = count_occurences(query, args.suffix)
             counted_queries[queries_file].append((query, query_count))
 
-        json.dump(counted_queries, open(os.path.join(args.queries_folder, "counts", "counts.json"), "w"),
+        json.dump(counted_queries, open(os.path.join(args.queries_folder, "counts.json"), "w"),
                   ensure_ascii=False, indent=2)
