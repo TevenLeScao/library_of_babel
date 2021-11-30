@@ -51,7 +51,7 @@ if __name__ == "__main__":
             if queries_file.split(".")[-1] == "json":
                 queries = json.load(f)
             elif queries_file.split(".")[-1] == "txt":
-                queries = f.readlines()
+                queries = [line[:-1] for line in f.readlines()]
             else:
                 raise NotImplementedError(f"File extension {queries_file.split('.')[-1]} not supported")
 
